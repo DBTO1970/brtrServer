@@ -21,7 +21,7 @@ loginRouter.route('/')
     res.end('Deleting all users');
 });
 
-userRouter.route('/:userId')
+loginRouter.route('/:userId')
 .all((req, res, next) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html');

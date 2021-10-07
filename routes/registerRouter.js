@@ -1,5 +1,5 @@
 const express = require('express');
-const partnerRouter = express.Router();
+const registerRouter = express.Router();
 
 registerRouter.route('/')
 .all((req, res, next) => {
@@ -8,7 +8,7 @@ registerRouter.route('/')
     next();
 })
 .get((req, res) => {
-    res.end('Will register you');
+    res.end('Will register you now!');
 })
 .post((req, res) => {
     res.end(`Will add the user: ${req.body.name} with description: ${req.body.description}`);
