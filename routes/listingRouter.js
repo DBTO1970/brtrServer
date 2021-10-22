@@ -1,44 +1,91 @@
 const express = require('express');
+const Listing = require('../models/listings');
+const authenticate = require('../authenticate');
+const cors = require('./cors');
+
 const listingRouter = express.Router();
 
+
 listingRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/html');
-    next();
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
+    Listing.find()
+    .populate("listings.userName")
+    .then(listings => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(listings);
+    })
+    .catch(err => next(err));
+    
 })
-.get((req, res) => {
-    res.end('Will send all the listings to you');
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Listing.create(req.body)
+    .then(listing => {
+        console.log('Listing Created', listing);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader.json(listing);
+    })
+    .catch(err => next(err));
 })
-.post((req, res) => {
-    res.end(`Will add the listing: ${req.body.name} with description: ${req.body.description}`);
-})
-.put((req, res) => {
+.put(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res) => {
     res.statusCode = 403;
     res.end('Put operation not supported on /listings');
 })
-.delete((req, res) => {
-    res.end('Deleting all listings');
+.delete(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+    Listing.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 listingRouter.route('/:listingId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/html');
-    next();
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
+    Listing.findById(req.params.listingId)
+    .populate("listings.userName")
+    .then((listing) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(listing);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end(`Will send details of listing: ${req.params.listingId} to you `);
-})
-.post((req, res) => {
-    res.end(`Will add the listing: ${req.body.name} with description: ${req.body.description}`);
-})
-.put((req, res) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
-    res.end('Put operation not supported on /listings');
+    res.end(`POST operation not supported on /listings/${req.params.listingId}`);
 })
-.delete((req, res) => {
-    res.end('Deleting all listings');
-}); //workshop pre
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Listing.findByIdAndUpdate(req.params.listingId, {
+        $set: req.body
+    }, { new: true })
+    .then(listing => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(listing);
+    })
+    .catch(err => next(err));
+})
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Listing.findByIdAndDelete(req.params.listingId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
+});
 
 module.exports = listingRouter;
