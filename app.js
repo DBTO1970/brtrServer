@@ -8,8 +8,6 @@ const config = require('./config');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const listingRouter = require('./routes/listingRouter');
-const loginRouter = require('./routes/loginRouter');
-const registerRouter = require('./routes/registerRouter');
 
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -54,8 +52,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/listings', listingRouter);
-app.use('/login', loginRouter);
-app.use('register', registerRouter);
 app.use('/imageUpload', uploadRouter);
 
 // catch 404 and forward to error handler
